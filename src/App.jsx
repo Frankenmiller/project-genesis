@@ -1,121 +1,104 @@
-// src/App.jsx
-import React, { useState } from 'react';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import { Moon, Sun, BookOpen, Compass, X, Type } from 'lucide-react';
 
-const BOOK_DATA = {
-  title: "Project Alpha: The Genesis",
-  chapters: [
-    {
-      id: 1,
-      title: "Chapter 1: Ad Sanctorum",
-      pages: [
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-        "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-        "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo."
-      ]
-    },
-    {
-      id: 2,
-      title: "Chapter 2: Blah Blah Jibberish",
-      pages: [
-        "At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident.",
-        "Similique sunt in culpa qui officia deserunt mollitia animi, id est laborum et dolorum fuga. Et harum quidem rerum facilis est et expedita distinctio. Nam libero tempore, cum soluta nobis est eligendi optio.",
-        "Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saepe eveniet ut et voluptates repudiandae sint et molestiae non recusandae. Itaque earum rerum hic tenetur a sapiente delectus."
-      ]
-    },
-    {
-      id: 3,
-      title: "Chapter 3: The Dashboard Horizon",
-      pages: [
-        "Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?",
-        "Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Commodi autem vel eum iure.",
-        "End of the preliminary transmission. Systems standing by for live asset integration, data parsing metrics, and interactive dashboard rendering."
-      ]
-    }
-  ]
-};
+const CHAPTERS = [
+  { id: 1, title: 'Chapter I: The Genesis', content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.' },
+  { id: 2, title: 'Chapter II: The Catalyst', content: 'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur.' },
+  { id: 3, title: 'Chapter III: The Network', content: 'At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi sint occaecati cupiditate non provident, similique sunt in culpa qui officia deserunt mollitia animi.' }
+];
 
 export default function App() {
-  const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
-  const [currentPageIndex, setCurrentPageIndex] = useState(0);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [currentChapter, setCurrentChapter] = useState(1);
+  const [theme, setTheme] = useState('dark'); // 'light', 'dark', 'sepia'
+  const [fontSize, setFontSize] = useState('md'); // 'sm', 'md', 'lg'
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
 
-  const currentChapter = BOOK_DATA.chapters[currentChapterIndex];
-  const currentPageText = currentChapter.pages[currentPageIndex];
+  // Close palette on escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setIsPaletteOpen(prev => !prev);
+      }
+      if (e.key === 'Escape') setIsPaletteOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
-  const handleNextPage = () => {
-    if (currentPageIndex < currentChapter.pages.length - 1) {
-      setCurrentPageIndex(currentPageIndex + 1);
-    } else if (currentChapterIndex < BOOK_DATA.chapters.length - 1) {
-      setCurrentChapterIndex(currentChapterIndex + 1);
-      setCurrentPageIndex(0);
-    }
-  };
-
-  const handlePrevPage = () => {
-    if (currentPageIndex > 0) {
-      setCurrentPageIndex(currentPageIndex - 1);
-    } else if (currentChapterIndex > 0) {
-      const prevChapterIndex = currentChapterIndex - 1;
-      setCurrentChapterIndex(prevChapterIndex);
-      setCurrentPageIndex(BOOK_DATA.chapters[prevChapterIndex].pages.length - 1);
-    }
-  };
+  const activeChapter = CHAPTERS.find(ch => ch.id === currentChapter) || CHAPTERS[0];
 
   return (
-    <div className="app-container">
-      <header className="app-header">
-        <button className="menu-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
-          ☰ Menu
-        </button>
-        <h1>{BOOK_DATA.title}</h1>
-        <div className="progress-pill">
-          Ch {currentChapter.id} · Pg {currentPageIndex + 1}/{currentChapter.pages.length}
+    <div className={`app-container theme-${theme} size-${fontSize}`}>
+      
+      {/* Top Navigation Header */}
+      <header className="navbar">
+        <div className="nav-left">
+          <BookOpen className="icon logo" />
+          <span className="project-title">Project Genesis</span>
+        </div>
+        
+        <div className="nav-right">
+          {/* Theme Toggles */}
+          <div className="theme-selector">
+            <button onClick={() => setTheme('light')} className={`theme-btn ${theme === 'light' ? 'active' : ''}`} title="Light Mode"><Sun className="icon" /></button>
+            <button onClick={() => setTheme('sepia')} className={`theme-btn ${theme === 'sepia' ? 'active' : ''}`} title="Sepia Mode"><span className="sepia-dot"></span></button>
+            <button onClick={() => setTheme('dark')} className={`theme-btn ${theme === 'dark' ? 'active' : ''}`} title="Dark Mode"><Moon className="icon" /></button>
+          </div>
+
+          {/* Font Size Toggle */}
+          <button 
+            onClick={() => setFontSize(prev => prev === 'sm' ? 'md' : prev === 'md' ? 'lg' : 'sm')} 
+            className="control-btn"
+            title="Adjust Font Size"
+          >
+            <Type className="icon" />
+          </button>
+
+          {/* Navigation Palette Trigger */}
+          <button onClick={() => setIsPaletteOpen(true)} className="control-btn palette-trigger">
+            <Compass className="icon" />
+            <span className="shortcut-hint">⌘K</span>
+          </button>
         </div>
       </header>
 
-      <div className="main-layout">
-        <nav className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-          <h3>Chapters</h3>
-          <ul>
-            {BOOK_DATA.chapters.map((ch, index) => (
-              <li 
-                key={ch.id} 
-                className={index === currentChapterIndex ? 'active' : ''}
-                onClick={() => {
-                  setCurrentChapterIndex(index);
-                  setCurrentPageIndex(0);
-                  setSidebarOpen(false);
-                }}
-              >
-                {ch.title}
-              </li>
-            ))}
-          </ul>
-        </nav>
+      {/* Main Reading Canvas */}
+      <main className="reading-canvas">
+        <article className="reading-measure">
+          <h1 className="chapter-title">{activeChapter.title}</h1>
+          <p className="chapter-text">{activeChapter.content}</p>
+        </article>
+      </main>
 
-        <main className="reading-canvas">
-          <article className="reading-content">
-            <h2>{currentChapter.title}</h2>
-            <p className="book-text">{currentPageText}</p>
-          </article>
-
-          <footer className="reading-controls">
-            <button 
-              onClick={handlePrevPage} 
-              disabled={currentChapterIndex === 0 && currentPageIndex === 0}
-            >
-              ← Prev
-            </button>
-            <button 
-              onClick={handleNextPage} 
-              disabled={currentChapterIndex === BOOK_DATA.chapters.length - 1 && currentPageIndex === currentChapter.pages.length - 1}
-            >
-              Next →
-            </button>
-          </footer>
-        </main>
-      </div>
+      {/* Modern Command Palette Modal */}
+      {isPaletteOpen && (
+        <div className="palette-overlay" onClick={() => setIsPaletteOpen(false)}>
+          <div className="palette-modal" onClick={e => e.stopPropagation()}>
+            <div className="palette-header">
+              <Compass className="icon text-muted" />
+              <input type="text" placeholder="Jump to chapter..." disabled className="palette-input" />
+              <button onClick={() => setIsPaletteOpen(false)} className="close-btn"><X className="icon" /></button>
+            </div>
+            <div className="palette-results">
+              <div className="section-label">Chapters</div>
+              {CHAPTERS.map(ch => (
+                <button 
+                  key={ch.id} 
+                  onClick={() => {
+                    setCurrentChapter(ch.id);
+                    setIsPaletteOpen(false);
+                  }}
+                  className={`palette-item ${ch.id === currentChapter ? 'selected' : ''}`}
+                >
+                  <span className="item-number">0{ch.id}</span>
+                  <span className="item-title">{ch.title}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
