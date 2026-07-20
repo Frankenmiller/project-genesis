@@ -1,0 +1,19 @@
+{
+  "name": "project-genesis",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": "https://Frankenmiller.github.io/project-genesis",
+  "devDependencies": {
+    "@vitejs/plugin-react": "^6.0.3",
+    "gh-pages": "^6.0.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
+    "vite": "^8.1.5"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
+  }
+}
