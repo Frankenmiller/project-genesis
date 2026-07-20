@@ -276,5 +276,18 @@
   .navbar { padding: 1rem; }
   .shortcut-hint { display: none; }
   .reading-canvas { padding: 2rem 1rem; }
-  .chapter-title { font-size: 1.75rem; }
+  
+  /* Shrink the main chapter headings */
+  .chapter-title { 
+    font-size: 1.6rem; 
+    letter-spacing: -0.02em;
+    margin-bottom: 1.25rem;
+  }
+  
+  /* Shrink the massive Project Frankenmiller front cover title */
+  h1 { 
+    font-size: 2.2rem !important; 
+    line-height: 1.05 !important;
+    letter-spacing: -0.03em !important;
+  }
 }

@@ -18,6 +18,30 @@ const CHAPTERS = [
       "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
       "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
     ]
+  },
+  { 
+    id: 2, 
+    title: "Chapter 2: The Network", 
+    content: [
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+    ]
+  },
+  { 
+    id: 3, 
+    title: "Chapter 3: The Illusion", 
+    content: [
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+    ]
+  },
+  { 
+    id: 4, 
+    title: "Chapter 3: The Reality", 
+    content: [
+      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+      "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur."
+    ]
   }
 ];
 
@@ -146,12 +170,25 @@ export default function App() {
               <button onClick={() => setIsPaletteOpen(false)} className="close-btn"><X className="icon" /></button>
             </div>
             <div className="palette-results">
-              <div className="section-label">Structure</div>
+              <div className="section-label">Navigation</div>
+              {/* Dedicated Front Cover Button */}
+              <button 
+                onClick={() => {
+                  setViewMode('cover');
+                  setIsPaletteOpen(false);
+                }}
+                className={`palette-item ${viewMode === 'cover' ? 'selected' : ''}`}
+              >
+                <span className="item-number">◇◇</span>
+                <span className="item-title">Front Cover</span>
+              </button>
+
+              <div className="section-label" style={{ marginTop: '0.5rem' }}>Structure</div>
               {CHAPTERS.map(ch => (
                 <button 
                   key={ch.id} 
                   onClick={() => handleSelectChapter(ch.id)}
-                  className={`palette-item ${ch.id === currentChapter ? 'selected' : ''}`}
+                  className={`palette-item ${viewMode === 'reading' && ch.id === currentChapter ? 'selected' : ''}`}
                 >
                   <span className="item-number">{ch.id === 0 ? '00' : `0${ch.id}`}</span>
                   <span className="item-title">{ch.title}</span>
