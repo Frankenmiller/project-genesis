@@ -77,7 +77,7 @@ const CHAPTERS = [
   },
   { 
     id: 5, 
-    title: "Chapter V: The Illusion", 
+    title: "Chapter V: The Grand Illusion", 
     content: [
       "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit.",
       "Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur? At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores.",
@@ -136,27 +136,54 @@ export default function App() {
   };
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        e.preventDefault();
-        setIsPaletteOpen(prev => !prev);
-      }
-      if (e.key === 'Escape') setIsPaletteOpen(false);
+      const handleKeyDown = (e) => {
+        if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+          e.preventDefault();
+          setIsPaletteOpen(prev => !prev);
+        }
+        if (e.key === 'Escape') setIsPaletteOpen(false);
 
-      if (viewMode === 'reading' && !isPaletteOpen) {
-        if (e.key === 'ArrowRight' || e.key === ' ') {
-          e.preventDefault();
-          setPageIndex(prev => Math.min(prev + 1, totalPages - 1));
+        if (viewMode === 'reading' && !isPaletteOpen) {
+          // Next Page / Next Chapter Boundary Handling
+          if (e.key === 'ArrowRight' || e.key === ' ') {
+            e.preventDefault();
+            setPageIndex(prev => {
+              if (prev < totalPages - 1) {
+                return prev + 1;
+              } else {
+                // At boundary: Check if a next chapter exists
+                const currentIdx = CHAPTERS.findIndex(ch => ch.id === currentChapter);
+                if (currentIdx !== -1 && currentIdx < CHAPTERS.length - 1) {
+                  setCurrentChapter(CHAPTERS[currentIdx + 1].id);
+                  return 0; // Reset to page 0 of new chapter
+                }
+              }
+              return prev;
+            });
+          }
+
+          // Previous Page / Previous Chapter Boundary Handling
+          if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            setPageIndex(prev => {
+              if (prev > 0) {
+                return prev - 1;
+              } else {
+                // At boundary: Check if a previous chapter exists
+                const currentIdx = CHAPTERS.findIndex(ch => ch.id === currentChapter);
+                if (currentIdx > 0) {
+                  setCurrentChapter(CHAPTERS[currentIdx - 1].id);
+                  return 0; // Starts at page 0 of previous chapter
+                }
+              }
+              return prev;
+            });
+          }
         }
-        if (e.key === 'ArrowLeft') {
-          e.preventDefault();
-          setPageIndex(prev => Math.max(prev - 1, 0));
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [viewMode, isPaletteOpen, totalPages]);
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [viewMode, isPaletteOpen, totalPages, currentChapter]);
 
   // Force app shell classes to synchronize instantly with application state
   useEffect(() => {
@@ -178,9 +205,9 @@ export default function App() {
   };
 
   const fontSizeStyles = {
-    sm: { fontSize: '0.9rem', lineHeight: '1.6' },
-    md: { fontSize: '1.1rem', lineHeight: '1.7' },
-    lg: { fontSize: '1.3rem', lineHeight: '1.8' }
+    sm: { fontSize: '1.0rem', lineHeight: '1.5' },
+    md: { fontSize: '1.0rem', lineHeight: '1.5' },
+    lg: { fontSize: '1.0rem', lineHeight: '1.5' }
   };
 
   const currentColors = themeStyles[theme] || themeStyles.dark;
@@ -377,15 +404,31 @@ export default function App() {
 
             {/* Next Page Target Zone */}
             <div 
-              onClick={() => setPageIndex(prev => Math.min(prev + 1, totalPages - 1))}
+              onClick={() => {
+                if (pageIndex < totalPages - 1) {
+                  setPageIndex(prev => prev + 1);
+                } else {
+                  const currentIdx = CHAPTERS.findIndex(ch => ch.id === currentChapter);
+                  if (currentIdx !== -1 && currentIdx < CHAPTERS.length - 1) {
+                    setCurrentChapter(CHAPTERS[currentIdx + 1].id);
+                    setPageIndex(0);
+                  }
+                }
+              }}
               style={{
                 position: 'absolute', right: 0, top: 0, bottom: '3.5rem', width: '15%',
-                cursor: pageIndex === totalPages - 1 ? 'default' : 'pointer', zIndex: 30, display: 'flex',
+                cursor: (pageIndex === totalPages - 1 && currentChapter === CHAPTERS[CHAPTERS.length - 1].id) ? 'default' : 'pointer', 
+                zIndex: 30, display: 'flex',
                 alignItems: 'center', justifyContent: 'center'
               }}
               className="page-nav-zone"
             >
-              <ChevronRight className="nav-arrow-icon" style={{ opacity: pageIndex === totalPages - 1 ? 0 : 0.4 }} />
+              <ChevronRight 
+                className="nav-arrow-icon" 
+                style={{ 
+                  opacity: (pageIndex === totalPages - 1 && currentChapter === CHAPTERS[CHAPTERS.length - 1].id) ? 0 : 0.4 
+                }} 
+              />
             </div>
 
             {/* Fixed Pagination Bar */}

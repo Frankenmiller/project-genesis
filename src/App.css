@@ -118,18 +118,46 @@
   transition: width 0.3s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* Override inline styling on mobile headers via existing MQ context */
 @media (max-width: 640px) {
   .book-engine-container {
     height: calc(100vh - var(--nav-height) - 1rem);
   }
   .page-nav-zone {
-    width: 12%; /* Wider tap targets on tiny touch screens */
+    width: 12%;
   }
   .book-text-columns {
     column-gap: 2rem;
   }
   .cover-main-title {
     font-size: 2.2rem !important;
+  }
+  .nav-right {
+    transform: translateX(-8px);
+  }
+}
+
+@media (max-width: 768px) {
+  /* Keep your general offset rule */
+  .nav-right {
+    transform: translateX(-6px);
+    gap: 0.35rem !important; /* Tightens space between theme bar, font size, and palette buttons */
+  }
+
+  /* Compact the padding around theme controls */
+  .theme-selector {
+    padding: 0.15rem !important;
+    gap: 0.15rem !important;
+  }
+
+  /* Shrink individual icon buttons */
+  .theme-selector button,
+  .control-btn,
+  .palette-trigger {
+    padding: 0.35rem 0.5rem !important;
+  }
+
+  /* Hide shortcut hint text on mobile to save precious horizontal space */
+  .shortcut-hint {
+    display: none !important;
   }
 }
