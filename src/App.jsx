@@ -107,13 +107,15 @@ export default function App() {
   const viewportRef = useRef(null);
   const activeChapter = CHAPTERS.find(ch => ch.id === currentChapter) || CHAPTERS[0];
 
-  const calculatePages = () => {
+const calculatePages = () => {
     if (trackRef.current && viewportRef.current && viewMode === 'reading') {
       const scrollWidth = trackRef.current.scrollWidth;
       const clientWidth = viewportRef.current.clientWidth;
       if (clientWidth > 0) {
         const pages = Math.ceil(scrollWidth / clientWidth);
         setTotalPages(pages || 1);
+        // If coming backward from next chapter, snap immediately to last page
+        setPageIndex(prev => Math.min(prev, (pages || 1) - 1));
       }
     }
   };
@@ -165,19 +167,15 @@ export default function App() {
           // Previous Page / Previous Chapter Boundary Handling
           if (e.key === 'ArrowLeft') {
             e.preventDefault();
-            setPageIndex(prev => {
-              if (prev > 0) {
-                return prev - 1;
-              } else {
-                // At boundary: Check if a previous chapter exists
-                const currentIdx = CHAPTERS.findIndex(ch => ch.id === currentChapter);
-                if (currentIdx > 0) {
-                  setCurrentChapter(CHAPTERS[currentIdx - 1].id);
-                  return 0; // Starts at page 0 of previous chapter
-                }
+            if (pageIndex > 0) {
+              setPageIndex(prev => prev - 1);
+            } else {
+              const currentIdx = CHAPTERS.findIndex(ch => ch.id === currentChapter);
+              if (currentIdx > 0) {
+                setCurrentChapter(CHAPTERS[currentIdx - 1].id);
+                setPageIndex(999); // Will snap to the last page of previous chapter automatically
               }
-              return prev;
-            });
+            }
           }
         }
       };
@@ -308,7 +306,7 @@ export default function App() {
         </div>
       </header>
       {/* Main Context Area */}
-      <main className="reading-canvas" style={{ flex: 1, position: 'relative', width: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 10 }}>
+<main className="reading-canvas" style={{ flex: 1, position: 'relative', width: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column', zIndex: 10 }}>
         {viewMode === 'cover' ? (
           /* --- FRONT COVER VIEW --- */
           <div style={{ maxWidth: '68ch', margin: 'auto auto', padding: '2rem', width: '100%', boxSizing: 'border-box' }}>
@@ -343,20 +341,36 @@ export default function App() {
           /* --- FIXED VIEWPORT BOOK ENGINE --- */
           <div style={{ display: 'flex', width: '100%', height: '100%', position: 'relative', overflow: 'hidden', flexDirection: 'column' }}>
             
-            {/* Previous Page Target Zone - CRITICAL: Top starts below navbar */}
+            {/* Previous Page Target Zone */}
             <div 
-              onClick={() => setPageIndex(prev => Math.max(prev - 1, 0))}
+              onClick={() => {
+                if (pageIndex > 0) {
+                  setPageIndex(prev => prev - 1);
+                } else {
+                  const currentIdx = CHAPTERS.findIndex(ch => ch.id === currentChapter);
+                  if (currentIdx > 0) {
+                    const prevChapterId = CHAPTERS[currentIdx - 1].id;
+                    setCurrentChapter(prevChapterId);
+                    setPageIndex(999); 
+                  }
+                }
+              }}
               style={{
                 position: 'absolute', left: 0, top: 0, bottom: '3.5rem', width: '15%',
-                cursor: pageIndex === 0 ? 'default' : 'pointer', zIndex: 30, display: 'flex',
-                alignItems: 'center', justifyContent: 'center'
+                cursor: (pageIndex === 0 && currentChapter === CHAPTERS[0].id) ? 'default' : 'pointer', 
+                zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}
               className="page-nav-zone"
             >
-              <ChevronLeft className="nav-arrow-icon" style={{ opacity: pageIndex === 0 ? 0 : 0.4 }} />
+              <ChevronLeft 
+                className="nav-arrow-icon" 
+                style={{ 
+                  opacity: (pageIndex === 0 && currentChapter === CHAPTERS[0].id) ? 0 : 0.4 
+                }} 
+              />
             </div>
 
-            {/* Main Center Viewport */}
+            {/* Main Center Viewport (Restored Missing Container) */}
             <div 
               ref={viewportRef}
               style={{
@@ -393,7 +407,7 @@ export default function App() {
                         breakInside: 'avoid', 
                         textAlign: 'left', 
                         color: 'inherit',
-                        ...fontSizeStyles[fontSize] /* <-- Injects line-height and size instantly */
+                        ...fontSizeStyles[fontSize]
                       }}
                     >
                       {paragraph}
@@ -418,17 +432,11 @@ export default function App() {
               style={{
                 position: 'absolute', right: 0, top: 0, bottom: '3.5rem', width: '15%',
                 cursor: (pageIndex === totalPages - 1 && currentChapter === CHAPTERS[CHAPTERS.length - 1].id) ? 'default' : 'pointer', 
-                zIndex: 30, display: 'flex',
-                alignItems: 'center', justifyContent: 'center'
+                zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'center'
               }}
               className="page-nav-zone"
             >
-              <ChevronRight 
-                className="nav-arrow-icon" 
-                style={{ 
-                  opacity: (pageIndex === totalPages - 1 && currentChapter === CHAPTERS[CHAPTERS.length - 1].id) ? 0 : 0.4 
-                }} 
-              />
+              <ChevronRight className="nav-arrow-icon" style={{ opacity: (pageIndex === totalPages - 1 && currentChapter === CHAPTERS[CHAPTERS.length - 1].id) ? 0 : 0.4 }} />
             </div>
 
             {/* Fixed Pagination Bar */}
